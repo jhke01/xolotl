@@ -315,6 +315,10 @@ protected:
 	 */
 	double fissionYield;
 
+	//added for UZr
+	double InterfaceE;
+	double XeSolubility;
+
 	/**
 	 * Migration energy above which the diffusion will be ignored
 	 */

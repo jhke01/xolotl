@@ -28,7 +28,7 @@ Options::Options() :
 				0), density(10.162795276841), pulseTime(0.0), pulseProportion(
 				0.0), latticeParameter(-1.0), impurityRadius(-1.0), biasFactor(
 				1.15), hydrogenFactor(0.25), xenonDiffusivity(-1.0), fissionYield(
-				0.25), migrationThreshold(
+				0.25), InterfaceE(0.1), XeSolubility(1e-8), migrationThreshold(
 				std::numeric_limits<double>::infinity()) {
 	radiusMinSizes.Init(0);
 
@@ -177,6 +177,10 @@ void Options::readParams(int argc, char *argv[]) {
 			"This option allows the user to set the diffusion coefficient for xenon in nm2 s-1.")(
 			"fissionYield", bpo::value<double>(&fissionYield),
 			"This option allows the user to set the number of xenon created for each fission.")(
+			"InterfaceE", bpo::value<double>(&InterfaceE),
+			"This option allows the user to set the interfece energy of Xe clusters")(
+			"XeSolubility", bpo::value<double>(&XeSolubility),
+			"This option allows the user to set the solubility of Xe")(
 			"migrationThreshold", bpo::value<double>(&migrationThreshold),
 			"This option allows the user to set a limit on the migration energy above which the diffusion will be ignored.");
 
