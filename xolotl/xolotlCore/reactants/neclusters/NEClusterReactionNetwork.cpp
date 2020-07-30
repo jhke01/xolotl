@@ -221,6 +221,10 @@ void NEClusterReactionNetwork::updateConcentrationsFromArray(
 				currReactant.setConcentration(concentrations[id]);
 			});
 
+	// Set the Xe monomer concentration
+	auto singleXeCluster = get(Species::Xe, 1);
+	setMonomerConc(singleXeCluster->getConcentration());
+
 	// Set the moments
 	auto const& superTypeMap = getAll(ReactantType::NESuper);
 	std::for_each(superTypeMap.begin(), superTypeMap.end(),
@@ -486,3 +490,40 @@ void NEClusterReactionNetwork::computeAllPartials(
 	return;
 }
 
+double NEClusterReactionNetwork::computeBindingEnergy(
+		const DissociationReaction &reaction) const {
+
+	// Get the monomer concentration
+	//auto conc = monomerConc;
+
+	// TODO: change to the desired formula or base it on formation energies
+
+	//double bindingEnergy = 0.0;
+
+	//int size = reaction.dissociating.getSize();
+
+/* full form of binding energy
+  if (size <= 2) {
+		double bindingEnergy = (reaction.first.getFormationEnergy()
+				+ reaction.second.getFormationEnergy()
+				- reaction.dissociating.getFormationEnergy())
+				- log(1e-8) * (xolotlCore::kBoltzmann * temperature)*2.0
+				- 0.6434*3 * (pow(size, 2.0 / 3.0) - 0 - 0  )*1.0;
+				return bindingEnergy;
+	 } else {
+		double bindingEnergy = (reaction.first.getFormationEnergy()
+						+ reaction.second.getFormationEnergy()
+						- reaction.dissociating.getFormationEnergy())
+						- log(1e-8) * (xolotlCore::kBoltzmann * temperature)*1.0
+						- 0.6434*3 * (pow(size, 2.0 / 3.0) - pow(size - 1, 2.0 / 3.0) - 0  )*1.0;
+						return bindingEnergy;
+	 }
+*/
+
+// elegant form
+	double bindingEnergy = (reaction.first.getFormationEnergy()
+			+ reaction.second.getFormationEnergy()
+			- reaction.dissociating.getFormationEnergy());
+
+			return bindingEnergy;
+}

@@ -66,6 +66,9 @@ private:
 		return bindingEnergy;
 	}
 
+	double computeBindingEnergy(const DissociationReaction& reaction) const
+			override;
+			
 	/**
 	 * Add the dissociation connectivity for the reverse reaction if it is allowed.
 	 *

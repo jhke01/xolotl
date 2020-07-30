@@ -242,6 +242,14 @@ std::unique_ptr<IReactionNetwork> NEClusterNetworkLoader::generate(
 		// Create the cluster
 		auto nextCluster = createNECluster(numXe, 0, 0, *network);
 
+		// For mean field Xe solubility and cluster interface energy, override previous formation energy
+		if (i <= 1){
+			nextCluster->setFormationEnergy((-1*log(options.getXeSolubility()) * (xolotlCore::kBoltzmann * options.getConstTemperature()))); //1e-8 is the Xe solubility
+		} else {
+			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getInterfaceE()); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0)*6.242 = 6.4349535575
+		}
+
 		// Set the other attributes
 		if (i <= xeFormationEnergies.size())
 			nextCluster->setFormationEnergy(xeFormationEnergies[i - 1]);
@@ -339,4 +347,3 @@ void NEClusterNetworkLoader::applyGrouping(IReactionNetwork& network) const {
 }
 
 } // namespace xolotlCore
-
