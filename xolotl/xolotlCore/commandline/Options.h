@@ -863,6 +863,15 @@ public:
 		return fissionYield;
 	}
 
+	// for UZr
+	virtual double getInterfaceE() const override {
+		return InterfaceE;
+	}
+
+	virtual double getXeSolubility() const override {
+		return XeSolubility;
+	}
+	//
 	/**
 	 * Obtain the value of the migration threshold
 	 * \see IOptions.h
