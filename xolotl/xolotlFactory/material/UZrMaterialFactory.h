@@ -54,6 +54,10 @@ public:
 		theFluxHandler->setFluxAmplitude(
 				options.getFluxAmplitude() * options.getFissionYield());
 
+		// Pass the fission yield to the re-solution and heterogenenous nucletation handlers
+		theReSolutionHandler->setFissionYield(options.getFissionYield());
+		theNucleationHandler->setFissionYield(options.getFissionYield());
+
 		return;
 	}
 };

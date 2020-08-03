@@ -47,7 +47,21 @@ public:
 
 		// TODO: Compute the reaction radius
 		// You can look at NEXeCluster.h
-		reactionRadius = network.getImpurityRadius();
+		//reactionRadius = network.getImpurityRadius();
+
+		double FourPi = 4.0 * xolotlCore::pi;
+		//reactionRadius = network.getLatticeParameter()
+			//	* pow((3.0 * nXe) / xolotlCore::pi, (1.0 / 3.0)) * 0.5;
+		reactionRadius = pow(
+				(3.0 * (double) size) / (FourPi * 10.162795276841),
+				(1.0 / 3.0));
+
+		// cout << "jvar = " << network.getDensity() << endl;
+		// seems that network.getDensity() will always return zero under UZr
+
+
+		if (size == 1)
+			reactionRadius = network.getImpurityRadius();
 
 		return;
 	}

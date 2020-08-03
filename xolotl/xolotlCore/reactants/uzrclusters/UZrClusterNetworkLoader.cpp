@@ -171,21 +171,24 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 		radius = xenonRadius;
 	network->setImpurityRadius(radius);
 
+	// Set the density in a bubble
+	network->setDensity(options.getDensity());
+
 	// TODO: replace with the correct kinetics here and phase-space
 
 	// Xe formation energies in eV
 	std::vector<double> heFormationEnergies = { 0.0 };
 	// Xe diffusion factors in nm^2/s
-	std::vector<double> heDiffusion = { 3.3e+10 };
+	std::vector<double> heDiffusion = { 1 };
 	// Xe migration energies in eV
-	std::vector<double> heMigration = { 0.06 };
+	std::vector<double> heMigration = { 0 };
 
 	// V formation energies in eV
 	std::vector<double> vFormationEnergies = { 0.0 };
 	// V diffusion factors in nm^2/s
-	std::vector<double> vDiffusion = { 2.5e+10 };
+	std::vector<double> vDiffusion = { 1 };
 	// V migration energies in eV
-	std::vector<double> vMigration = { 0.48 };
+	std::vector<double> vMigration = { 0 };
 
 	// Generate the Xe clusters
 	for (int i = 1; i <= maxXe; ++i) {
@@ -196,9 +199,22 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 
 		// Set the other attributes
 		nextCluster->setFormationEnergy(0.0);
+
+		if (i <= 1){
+			nextCluster->setFormationEnergy((-1*log(options.getXeSolubility()) * (xolotlCore::kBoltzmann * options.getConstTemperature()))); //1e-8 is the Xe solubility
+		} else {
+			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getInterfaceE()); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0)*6.242 = 6.4349535575
+		}
+
 		if (i <= heDiffusion.size()) {
 			nextCluster->setDiffusionFactor(heDiffusion[i - 1]);
 			nextCluster->setMigrationEnergy(heMigration[i - 1]);
+			// If the diffusivity is given
+			if (options.getXenonDiffusivity() > 0.0) {
+				nextCluster->setDiffusionFactor(options.getXenonDiffusivity());
+				nextCluster->setMigrationEnergy(-1.0);
+			}
 		} else {
 			nextCluster->setDiffusionFactor(0.0);
 			nextCluster->setMigrationEnergy(
@@ -225,6 +241,15 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 
 		// Set the other attributes
 		nextCluster->setFormationEnergy(0.0);
+		
+		if (i <= 1){
+			nextCluster->setFormationEnergy((-1*log(1e-5) * (xolotlCore::kBoltzmann * options.getConstTemperature()))); //1e-8 is the Xe solubility
+		} else {
+			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*0.1); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0)*6.242 = 6.4349535575
+		}
+
+
 		if (i <= vDiffusion.size()) {
 			nextCluster->setDiffusionFactor(vDiffusion[i - 1]);
 			nextCluster->setMigrationEnergy(vMigration[i - 1]);
@@ -285,4 +310,3 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 }
 
 } // namespace xolotlCore
-

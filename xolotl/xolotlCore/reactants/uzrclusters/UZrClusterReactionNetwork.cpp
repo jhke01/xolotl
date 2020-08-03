@@ -453,10 +453,17 @@ void UZrClusterReactionNetwork::computeAllPartials(
 double UZrClusterReactionNetwork::computeBindingEnergy(
 		const DissociationReaction &reaction) const {
 	// Get the monomer concentration
-	auto conc = monomerConc;
+	//auto conc = monomerConc;
 
 	// TODO: change to the desired formula or base it on formation energies
-	double bindingEnergy = 5.0;
+	//double bindingEnergy = 5.0;
+
+	double bindingEnergy = (reaction.first.getFormationEnergy()
+			+ reaction.second.getFormationEnergy()
+			- reaction.dissociating.getFormationEnergy());
+
+	/*
+	double bindingEnergy = 0.0;
 	if (reaction.dissociating.getType() == ReactantType::Xe
 			&& reaction.first.getType() == ReactantType::Xe) {
 		if (reaction.dissociating.getSize() == 2)
@@ -489,6 +496,7 @@ double UZrClusterReactionNetwork::computeBindingEnergy(
 												/ (double) comp[toCompIdx(
 														Species::V)]));
 	}
+	*/
 
 //	if (bindingEnergy < -5.0)
 //	std::cout << "dissociation: " << reaction.dissociating.getName() << " -> "
@@ -496,8 +504,7 @@ double UZrClusterReactionNetwork::computeBindingEnergy(
 //			<< reaction.second.getName() << " : " << bindingEnergy
 //			<< std::endl;
 
-	return max(bindingEnergy, -5.0);
+	return bindingEnergy;
 }
 
 } // namespace xolotlCore
-
