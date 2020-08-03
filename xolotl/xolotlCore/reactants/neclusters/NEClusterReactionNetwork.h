@@ -57,6 +57,7 @@ private:
 	 * @param reaction The reaction
 	 * @return The binding energy corresponding to this dissociation
 	 */
+	/*
 	virtual double computeBindingEnergy(
 			const DissociationReaction& reaction) const override {
 		double bindingEnergy = reaction.first.getFormationEnergy()
@@ -65,10 +66,11 @@ private:
 
 		return bindingEnergy;
 	}
+	*/
 
 	double computeBindingEnergy(const DissociationReaction& reaction) const
 			override;
-			
+
 	/**
 	 * Add the dissociation connectivity for the reverse reaction if it is allowed.
 	 *
