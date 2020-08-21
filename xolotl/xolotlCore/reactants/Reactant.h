@@ -144,6 +144,11 @@ protected:
 	double migrationEnergy;
 
 	/**
+	 * The monomer concentration.
+	 */
+	double monomerConc;
+
+	/**
 	 * The reaction radius of this cluster
 	 */
 	double reactionRadius;

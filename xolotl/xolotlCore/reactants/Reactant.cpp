@@ -22,6 +22,7 @@ Reactant::Reactant(IReactionNetwork& _network,
 
 void Reactant::recomputeDiffusionCoefficient(double temp, int i) {
 	// Return zero if the diffusion factor is zero.
+	/*
 	if (!xolotlCore::equal(diffusionFactor, 0.0)) {
 		// Otherwise use the Arrhenius equation to compute the diffusion
 		// coefficient
@@ -29,6 +30,55 @@ void Reactant::recomputeDiffusionCoefficient(double temp, int i) {
 		double kernel = -1.0 * migrationEnergy / (k_b * temp);
 		diffusionCoefficient[i] = diffusionFactor * exp(kernel);
 	}
+	*/
+
+	/*
+	for (auto const &currMapItem : network.getAll(ReactantType::V)) {
+		// Get the cluster
+    auto const &cluster = *(currMapItem.second);
+		//double V_conc = cluster.getConcentration();
+		if (cluster.getSize() == 1) {
+			monomerConc1 = cluster.getConcentration();
+			}
+		}
+	//std::cout << "monomerXv =  " << monomerConc << std::endl;
+	*/
+
+	auto singleXeCluster = network.get(Species::V, 1);
+	auto monomerConc = singleXeCluster->getConcentration();
+	//std::cout << "conc " << monomerConc  << std::endl;
+
+	if (getType() == ReactantType::Xe) {
+		// Intrinsic diffusion
+		//double kernel_0 = -1.30 / (xolotlCore::kBoltzmann * temp);
+		//double D0 = 7.6e8 * exp(kernel_0); // nm2/s
+
+		double kernel = -0.6 / (xolotlCore::kBoltzmann * temp); // just migration barrier
+		double D3_Xe = 1e-7 * exp(kernel) * monomerConc * 1.0e18; // nm2/s
+
+		// Athermal diffusion
+		// We need the fission rate now
+		double fissionRate = network.getFissionRate() * 1.0e27; // #/m3/s
+		double D1_Xe = (8e-40 * fissionRate) * 1.0e18; // nm2/s
+
+		diffusionCoefficient[i] = D3_Xe;
+		std::cout << "DXe =  " << diffusionCoefficient[i] << std::endl;
+		}
+
+	if (getType() == ReactantType::V) {
+		// Vacancy diffusion
+		// parameters from Smirnova, D.E., Kuksin, A.Y., Starikov, S.V. et al.
+		// Atomistic modeling of the self-diffusion in γ-U and γ-U-Mo.
+		// Phys. Metals Metallogr. 116, 445–455 (2015).
+		// https://doi.org/10.1134/S0031918X1503014X
+		//double kernel = -0.5 / (xolotlCore::kBoltzmann * temp); // just migration barrier
+		//double D3 = 1.74e-7 * exp(kernel) * 1.0e18; // nm2/s
+		double kernel = -1.00 / (xolotlCore::kBoltzmann * temp); // just migration barrier
+		double D3_Va = 7.6e8 * exp(kernel); // nm2/s
+		diffusionCoefficient[i] = D3_Va;
+		//std::cout << "DV =  " << diffusionCoefficient[i] << std::endl;
+		}
+		//std::cout << "DV =  " << diffusionCoefficient[1] << std::endl;
 
 	return;
 }
