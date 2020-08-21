@@ -62,6 +62,7 @@ public:
 		}
 		fluxIndices.push_back(fluxCluster->getId() - 1);
 
+
 		// Look for vacancies now
 		fluxCluster = network.get(Species::V, 1);
 		if (!fluxCluster) {
@@ -70,6 +71,7 @@ public:
 							"cannot use the flux option!");
 		}
 		fluxIndices.push_back(fluxCluster->getId() - 1);
+
 
 		return;
 	}
@@ -91,7 +93,7 @@ public:
 		// 0D Case
 		if (xGrid.size() == 0) {
 			updatedConcOffset[fluxIndices[0]] += fluxAmplitude;
-			updatedConcOffset[fluxIndices[1]] += fluxAmplitude; // add the vacancy generation rate
+			updatedConcOffset[fluxIndices[1]] += fluxAmplitude*1e4; // add the vacancy generation rate
 			return;
 		}
 
