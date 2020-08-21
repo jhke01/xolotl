@@ -16,7 +16,7 @@ namespace xolotlCore {
 // Note: the class stores 1D data as an attribute on a group instead
 // of as a dataset.
 // TODO Why?  because it is an attribute, every process must have same
-// data to write.  As opposed to dataset, where can use independent file 
+// data to write.  As opposed to dataset, where can use independent file
 // access to let one process write. (?)
 class XFile: public HDF5File {
 public:
@@ -596,6 +596,14 @@ public:
 		 * Read the cluster properties from our group.
 		 *
 		 * @param nTot The total number of clusters it contains.
+		 * @param maxXe The maximum value
+		 */
+		void readUZrSuperCluster(int &nTot, int &maxXe) const;
+
+		/**
+		 * Read the cluster properties from our group.
+		 *
+		 * @param nTot The total number of clusters it contains.
 		 * @param maxAtom The maximum value
 		 * @param type The type of cluster
 		 */
@@ -698,4 +706,3 @@ public:
 #include "xolotlCore/io/XFileType.h"
 
 #endif // XCORE_XFILE_H
-

@@ -16,7 +16,8 @@ std::string toString(ReactantType rtype) {
 			ReactantType::Perfect, "Perfect" }, { ReactantType::Faulted,
 			"Faulted" }, { ReactantType::Frank, "Frank" }, {
 			ReactantType::PSIMixed, "PSIMixed" }, { ReactantType::PSISuper,
-			"PSISuper" }, { ReactantType::NESuper, "NESuper" }, {
+			"PSISuper" }, { ReactantType::NESuper, "NESuper" },
+			{ ReactantType::UZrSuper, "UZrSuper" },{
 			ReactantType::FeSuper, "FeSuper" }, { ReactantType::VoidSuper,
 			"VoidSuper" }, { ReactantType::PerfectSuper, "PerfectSuper" }, {
 			ReactantType::FaultedSuper, "FaultedSuper" }, {
@@ -58,4 +59,3 @@ ReactantType toReactantType(Species s) {
 }
 
 } // namespace xolotlCore
-

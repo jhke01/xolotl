@@ -247,7 +247,7 @@ std::unique_ptr<IReactionNetwork> NEClusterNetworkLoader::generate(
 			nextCluster->setFormationEnergy((-1*log(options.getXeSolubility()) * (xolotlCore::kBoltzmann * options.getConstTemperature()))); //1e-8 is the Xe solubility
 		} else {
 			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
-			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getInterfaceE()); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0)*6.242 = 6.4349535575
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getXeInterfaceE()); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0)*6.242 = 6.4349535575
 		}
 
 		// Set the other attributes

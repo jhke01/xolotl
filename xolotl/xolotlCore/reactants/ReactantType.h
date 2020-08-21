@@ -56,6 +56,9 @@ enum class ReactantType {
 	// Reactant types for NE networks
 	NESuper,
 
+	// Reactant types for UZr networks
+	UZrSuper,
+
 	// Reactant types for iron networks
 	FeSuper,
 
