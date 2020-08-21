@@ -647,6 +647,18 @@ void XFile::ClusterGroup::readNESuperCluster(int &nTot, int &maxXe) const {
 	return;
 }
 
+void XFile::ClusterGroup::readUZrSuperCluster(int &nTot, int &maxXe) const {
+	// Open and read the nTot attribute
+	Attribute<int> nTotAttr(*this, nTotAttrName);
+	nTot = nTotAttr.get();
+	// Open and read the numXe attribute
+	Attribute<int> numAtomAttr(*this, numAtomAttrName);
+	maxXe = numAtomAttr.get();
+
+	return;
+}
+
+
 void XFile::ClusterGroup::readAlloySuperCluster(int &nTot, int &maxAtom,
 		ReactantType &type) const {
 	// Open and read the nTot attribute
@@ -1251,7 +1263,7 @@ void XFile::TimestepGroup::writeConcentrationDataset(int size,
 
 // Caller gives us 2D ragged representation, and we flatten it into
 // a 1D dataset and add a 1D "starting index" array.
-// Assumes that grid point slabs are assigned to processes in 
+// Assumes that grid point slabs are assigned to processes in
 // MPI rank order.
 void XFile::TimestepGroup::writeConcentrations(const XFile& file, int baseX,
 		const Concs1DType& raggedConcs) const {
@@ -1443,4 +1455,3 @@ auto XFile::TimestepGroup::readGridPoint(int i, int j,
 }
 
 } // namespace xolotlCore
-
