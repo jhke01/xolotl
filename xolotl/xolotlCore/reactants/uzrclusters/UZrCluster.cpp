@@ -11,20 +11,21 @@ void UZrCluster::recomputeDiffusionCoefficient(double temp, int i) {
 	if (xolotlCore::equal(diffusionFactor, 0.0))
 		return;
 
-	//Reactant::recomputeDiffusionCoefficient(temp, i);
-
+	Reactant::recomputeDiffusionCoefficient(temp, i);
+	/*
 	if (migrationEnergy < 0.0) {
 		diffusionCoefficient[i] = diffusionFactor;
 		return;
 	}
-	
+	*/
+
 	// TODO: if the formula in Reactant.cpp is enough this method can be removed
 	// Else you can look at NECluster.cpp to implement a specific behavior.
 
-	/*
 	// Intrinsic diffusion
-	double kernel = -3.04 / (xolotlCore::kBoltzmann * temp);
-	double D3 = 7.6e8 * exp(kernel); // nm2/s
+	//double kernel = -1.50 / (xolotlCore::kBoltzmann * temp);
+	//double D3 = 7.6e8 * exp(kernel) * conc; // nm2/s
+	/*
 	// We need the fission rate now
 	double fissionRate = network.getFissionRate() * 1.0e27; // #/m3/s
 	// Athermal diffusion
@@ -32,7 +33,26 @@ void UZrCluster::recomputeDiffusionCoefficient(double temp, int i) {
 	// Radiation-enhanced diffusion
 	kernel = -1.2 / (xolotlCore::kBoltzmann * temp);
 	double D2 = (5.6e-25 * sqrt(fissionRate) * exp(kernel)) * 1.0e18; // nm2/s
-	//diffusionCoefficient[i] = 1;
+	//diffusionCoefficient[i] = D1 + D2 + D3;
+	*/
+	//diffusionCoefficient[i] = 10;
+
+	/*
+	auto conc = monomerConc;
+
+	if (getType() == ReactantType::Xe) {
+		// Intrinsic diffusion
+		//double kernel = -1.50 / (xolotlCore::kBoltzmann * temp);
+		//double D3 = 7.6e8 * exp(kernel) * conc; // nm2/s
+		diffusionCoefficient[i] = 10;
+	}
+
+	if (getType() == ReactantType::V) {
+		// Intrinsic diffusion
+		//double kernel = -1.50 / (xolotlCore::kBoltzmann * temp);
+		//double D3 = 7.6e8 * exp(kernel) * conc; // nm2/s
+		diffusionCoefficient[i] = 10;
+	}
 	*/
 
 	return;
@@ -258,7 +278,7 @@ double UZrCluster::getTotalFlux(int i) {
 	return prodFlux - combFlux + dissFlux - emissFlux;
 }
 
-double UZrCluster::getDissociationFlux(int xi) const {
+double UZrCluster::getDissociationFlux(int xi) {
 
 	// Sum dissociation flux over all pairs that dissociate to form this one.
 	double flux =
@@ -278,7 +298,7 @@ double UZrCluster::getDissociationFlux(int xi) const {
 	return flux;
 }
 
-double UZrCluster::getEmissionFlux(int xi) const {
+double UZrCluster::getEmissionFlux(int xi) {
 
 	// Sum reaction rate constants over all emission pair reactions.
 	double flux = std::accumulate(emissionPairs.begin(), emissionPairs.end(),
@@ -289,7 +309,7 @@ double UZrCluster::getEmissionFlux(int xi) const {
 	return flux * concentration;
 }
 
-double UZrCluster::getProductionFlux(int xi) const {
+double UZrCluster::getProductionFlux(int xi) {
 	// Local declarations
 	double flux = 0.0;
 
@@ -311,7 +331,7 @@ double UZrCluster::getProductionFlux(int xi) const {
 	return flux;
 }
 
-double UZrCluster::getCombinationFlux(int xi) const {
+double UZrCluster::getCombinationFlux(int xi) {
 
 	double flux =
 			std::accumulate(combiningReactants.begin(),
