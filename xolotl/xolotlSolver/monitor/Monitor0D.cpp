@@ -16,6 +16,7 @@
 #include <vector>
 #include <memory>
 #include <NESuperCluster.h>
+//#include <UZrSuperCluster.h>
 #include <PSISuperCluster.h>
 #include <FeSuperCluster.h>
 #include <UZrCluster.h>
@@ -130,7 +131,7 @@ PetscErrorCode startStop0D(TS ts, PetscInt timestep, PetscReal time,
 	gridPointSolution = solutionArray[0];
 
 	for (auto l = 0; l < dof; ++l) {
-		if (std::fabs(gridPointSolution[l]) > 1.0e-16) {
+		if (std::fabs(gridPointSolution[l]) > 1.0e-30) {
 			concs[0].emplace_back(l, gridPointSolution[l]);
 		}
 	}
@@ -192,7 +193,9 @@ PetscErrorCode computeXenonContent0D(TS ts, PetscInt, PetscReal time,
 	double bubbleConcentration = 0.0, radii = 0.0,
 			partialBubbleConcentration = 0.0, partialRadii = 0.0,
 			partialSize = 0.0, Xe_Density = 0.0, Xe_Size_t = 0.0,
-			Xe_Par_Density = 0.0,Xe_Par_Size_t = 0.0;
+			Xe_Par_Density = 0.0, Xe_Par_Size_t = 0.0,V_Density = 0.0,
+			V_Size_t = 0.0, V_Par_Density = 0.0,V_Par_Size_t = 0.0,
+			Xe_mono = 0, V_mono = 0;
 
 	// Loop on all the indices
 	for (unsigned int i = 0; i < indices0D.size(); i++) {
@@ -212,9 +215,12 @@ PetscErrorCode computeXenonContent0D(TS ts, PetscInt, PetscReal time,
 		// Get the cluster
     auto const &cluster = *(currMapItem.second);
 		double Xe_conc = cluster.getConcentration();
+		if (cluster.getSize() == 1) {
+			Xe_mono = cluster.getConcentration();
+		}
 		Xe_Density += Xe_conc;
 		Xe_Size_t += Xe_conc * cluster.getSize();
-		if (cluster.getSize() >= minSizes[0] && Xe_conc > 1.0e-16) {
+		if (cluster.getSize() >= minSizes[0] && Xe_conc > 1.0e-30) {
 		  Xe_Par_Density += Xe_conc;
 		  Xe_Par_Size_t += Xe_conc * cluster.getSize();
 			//Xe_Par_Radius += gridPointSolution[cluster.getId() - 1] * cluster.getReactionRadius();
@@ -224,25 +230,51 @@ PetscErrorCode computeXenonContent0D(TS ts, PetscInt, PetscReal time,
 	double Xe_Size = Xe_Size_t / Xe_Density;
 	double Xe_Par_Size = (Xe_Par_Size_t) / (Xe_Par_Density);
 
+	V_Par_Density = 0.0;
+	V_Par_Size_t = 0.0;
+	V_Density = 0.0;
+	V_Size_t = 0.0;
+	for (auto const &currMapItem : network.getAll(ReactantType::V)) {
+		// Get the cluster
+    auto const &cluster = *(currMapItem.second);
+		double V_conc = cluster.getConcentration();
+		if (cluster.getSize() == 1) {
+			V_mono = cluster.getConcentration();
+		}
+		V_Density += V_conc;
+		V_Size_t += V_conc * cluster.getSize();
+		if (cluster.getSize() >= minSizes[0] && V_conc > 1.0e-30) {
+		  V_Par_Density += V_conc;
+		  V_Par_Size_t += V_conc * cluster.getSize();
+		}
+	}
+
+	double V_Size = V_Size_t / V_Density;
+	double V_Par_Size = (V_Par_Size_t) / (V_Par_Density);
+
+
 	double xeConcentration = network.getTotalAtomConcentration();
 	double vConcentration = network.getTotalVConcentration();
 
+
 	// Print the result
 	std::cout << "\nTime: " << time << std::endl;
-	std::cout << "Xenon concentration = " << xeConcentration << std::endl;
-	std::cout << "Vacancy concentration = " << vConcentration << std::endl
+	std::cout << "Xenon concentration = " << Xe_mono << std::endl;
+	std::cout << "Vacancy concentration = " << V_mono << std::endl
 			<< std::endl;
 
 	// Write more data in a file
 	std::ofstream outputFile;
 	outputFile.open("contentOut.txt", ios::app);
 	outputFile << time << " " << xeConcentration << " " << vConcentration << " "
-			<< xeConcentration / bubbleConcentration << " "
-			<< vConcentration / bubbleConcentration << " "
-			<< Xe_Density << " "
-			<< Xe_Size << " "
+			//<< xeConcentration / bubbleConcentration << " "
+			//<< vConcentration / bubbleConcentration << " "
+			<< Xe_mono << " "
+			<< V_mono << " "
 			<< Xe_Par_Density << " "
 			<< Xe_Par_Size << " "
+			<< V_Par_Density << " "
+			<< V_Par_Size << " "
 		//<< bubbleConcentration << " "
 		//<< radii / bubbleConcentration << " "
 			<< std::endl;
@@ -308,7 +340,7 @@ PetscErrorCode computeXenonRetention0D(TS ts, PetscInt, PetscReal time,
 		xeConcentration += conc * weights0D[i];
 		bubbleConcentration += conc;
 		radii += conc * radii0D[i];
-		if (weights0D[i] >= minSizes[0] && conc > 1.0e-16) {
+		if (weights0D[i] >= minSizes[0] && conc > 1.0e-30) {
 			partialBubbleConcentration += conc;
 			partialRadii += conc * radii0D[i];
 			partialSize += conc * weights0D[i];
@@ -323,7 +355,7 @@ PetscErrorCode computeXenonRetention0D(TS ts, PetscInt, PetscReal time,
 		xeConcentration += cluster.getTotalXenonConcentration();
 		bubbleConcentration += conc;
 		radii += conc * cluster.getReactionRadius();
-		if (cluster.getSize() >= minSizes[0] && conc > 1.0e-16) {
+		if (cluster.getSize() >= minSizes[0] && conc > 1.0e-30) {
 			partialBubbleConcentration += conc;
 			partialRadii += conc * cluster.getReactionRadius();
 			partialSize += cluster.getTotalXenonConcentration();
@@ -341,7 +373,7 @@ PetscErrorCode computeXenonRetention0D(TS ts, PetscInt, PetscReal time,
 			(3.0 * (double) minSizes[0])
 					/ (4.0 * xolotlCore::pi * network.getDensity()),
 			(1.0 / 3.0));
-	if (partialBubbleConcentration < 1.e-16 || averagePartialRadius < minRadius)
+	if (partialBubbleConcentration < 1.e-30 || averagePartialRadius < minRadius)
 		averagePartialRadius = minRadius;
 
 	// Uncomment to write the retention and the fluence in a file
@@ -869,7 +901,7 @@ PetscErrorCode setupPetsc0DMonitor(TS ts) {
 		checkPetscError(ierr,
 				"setupPetsc0DMonitor: PetscOptionsGetInt (-check_collapse) failed.");
 		if (!flag)
-			timeStepThreshold = 1.0e-16;
+			timeStepThreshold = 1.0e-30;
 
 		// Set the post step process that tells the solver when to stop if the time step collapse
 		ierr = TSSetPostStep(ts, checkTimeStep);
