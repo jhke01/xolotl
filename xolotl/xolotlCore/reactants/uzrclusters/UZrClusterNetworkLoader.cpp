@@ -8,6 +8,7 @@
 #include <cassert>
 #include "xolotlCore/io/XFile.h"
 
+
 namespace xolotlCore {
 
 std::unique_ptr<UZrCluster> UZrClusterNetworkLoader::createUZrCluster(int numXe,
@@ -19,6 +20,7 @@ std::unique_ptr<UZrCluster> UZrClusterNetworkLoader::createUZrCluster(int numXe,
 	// Determine the type of the cluster given the number of each species.
 	// Create a new cluster by that type and specify the names of the
 	// property keys.
+	/*
 	if (numXe > 0 && numV > 0) {
 		// Create a new XeVCluster
 		cluster = new UZrXeVCluster(numXe, numV, network, handlerRegistry);
@@ -29,6 +31,17 @@ std::unique_ptr<UZrCluster> UZrClusterNetworkLoader::createUZrCluster(int numXe,
 		// Create a new VCluster
 		cluster = new UZrVCluster(numV, network, handlerRegistry);
 	}
+	*/
+
+  if (numXe > 0) {
+		// Create a new XeCluster
+		cluster = new UZrXeCluster(numXe, network, handlerRegistry);
+	} else if (numV > 0) {
+		// Create a new VCluster
+		cluster = new UZrVCluster(numV, network, handlerRegistry);
+	}
+
+
 	assert(cluster != nullptr);
 
 	return std::unique_ptr<UZrCluster>(cluster);
@@ -186,9 +199,9 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 	// V formation energies in eV
 	std::vector<double> vFormationEnergies = { 0.0 };
 	// V diffusion factors in nm^2/s
-	std::vector<double> vDiffusion = { 1 };
+	std::vector<double> vDiffusion = { 1e14 };
 	// V migration energies in eV
-	std::vector<double> vMigration = { 0 };
+	std::vector<double> vMigration = { 1.0 };
 
 	// Generate the Xe clusters
 	for (int i = 1; i <= maxXe; ++i) {
@@ -204,7 +217,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 			nextCluster->setFormationEnergy((-1*log(options.getXeSolubility()) * (xolotlCore::kBoltzmann * options.getConstTemperature()))); //1e-8 is the Xe solubility
 		} else {
 			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
-			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getInterfaceE()); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0)*6.242 = 6.4349535575
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getXeInterfaceE()); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0) = 6.4349535575
 		}
 
 		if (i <= heDiffusion.size()) {
@@ -231,6 +244,9 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 
 	// Reset the Xe composition
 	numXe = 0;
+	double atomicVolume = 0.5 * pow(latticeParam, 3);
+
+	//std::cout << "lattice para =  " << latticeParam << std::endl;
 
 	// Generate the V clusters
 	for (int i = 1; i <= maxV; ++i) {
@@ -241,18 +257,22 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 
 		// Set the other attributes
 		nextCluster->setFormationEnergy(0.0);
-		
+
 		if (i <= 1){
-			nextCluster->setFormationEnergy((-1*log(1e-5) * (xolotlCore::kBoltzmann * options.getConstTemperature()))); //1e-8 is the Xe solubility
+			nextCluster->setFormationEnergy(options.getVaFormationE()); //1.2 is vacancy formation energy
 		} else {
 			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
-			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*0.1); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0)*6.242 = 6.4349535575
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*pow(36*xolotlCore::pi*pow(atomicVolume*1e-27,2),1.0/3.0)/1.602e-19 * options.getVaInterfaceE()); // pow(36*xolotlCore::pi*pow(atomicVolume*1e-27,2),1.0/3.0) = 6.4349535575
 		}
-
 
 		if (i <= vDiffusion.size()) {
 			nextCluster->setDiffusionFactor(vDiffusion[i - 1]);
 			nextCluster->setMigrationEnergy(vMigration[i - 1]);
+			// If the diffusivity is given
+			if (options.getXenonDiffusivity() > 0.0) {
+				nextCluster->setDiffusionFactor(options.getXenonDiffusivity());
+				nextCluster->setMigrationEnergy(-1.0);
+			}
 		} else {
 			nextCluster->setDiffusionFactor(0.0);
 			nextCluster->setMigrationEnergy(
@@ -270,6 +290,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 	// Reset the V composition
 	numV = 0;
 
+/*
 	// Loop over vacancies in the outer loop.
 	for (int i = 1; i <= maxV; ++i) {
 		numV = i;
@@ -294,6 +315,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 			network->add(std::move(nextCluster));
 		}
 	}
+	*/
 
 	// Update reactants now that they are in network.
 	for (IReactant &currCluster : reactants) {

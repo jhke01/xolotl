@@ -30,7 +30,7 @@ double UZrClusterReactionNetwork::calculateDissociationConstant(
 	// TODO: Compute the atomic volume correctly depending on the structure of the material
 	// You can look at NEClusterReactionNetwork
 	double atomicVolume = 0.5 * pow(latticeParameter, 3);
-
+	//std::cout << "lattice para =  " << latticeParameter << std::endl;
 	// Get the rate constant from the reverse reaction
 	double kPlus = reaction.reverseReaction->kConstant[i];
 
@@ -250,10 +250,14 @@ void UZrClusterReactionNetwork::updateConcentrationsFromArray(
 				auto id = currReactant.getId() - 1;
 				currReactant.setConcentration(concentrations[id]);
 			});
-
+	/*
 	// Set the Xe monomer concentration
 	auto singleXeCluster = get(Species::Xe, 1);
 	setMonomerConc(singleXeCluster->getConcentration());
+	*/
+	// Set the Va monomer concentration
+	//auto singleVCluster = get(Species::V, 1);
+	//setMonomerConc(singleVCluster->getConcentration());
 
 	return;
 }

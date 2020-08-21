@@ -150,6 +150,7 @@ public:
 	 */
 	void updateConcentrationsFromArray(double * concentrations) override;
 
+
 	/**
 	 * This operation returns the size or number of reactants and momentums in the network.
 	 *
@@ -165,6 +166,8 @@ public:
 	 * @return The list of compositions
 	 */
 	virtual std::vector<std::vector<int> > getCompositionList() const override;
+
+
 
 	/**
 	 * Get the diagonal fill for the Jacobian, corresponding to the reactions.
