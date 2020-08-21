@@ -316,9 +316,10 @@ protected:
 	double fissionYield;
 
 	//added for UZr
-	double InterfaceE;
+	double XeInterfaceE;
 	double XeSolubility;
-
+	double VaInterfaceE;
+	double VaFormationE;
 	/**
 	 * Migration energy above which the diffusion will be ignored
 	 */
@@ -864,12 +865,20 @@ public:
 	}
 
 	// for UZr
-	virtual double getInterfaceE() const override {
-		return InterfaceE;
+	virtual double getXeInterfaceE() const override {
+		return XeInterfaceE;
 	}
 
 	virtual double getXeSolubility() const override {
 		return XeSolubility;
+	}
+
+	virtual double getVaInterfaceE() const override {
+		return VaInterfaceE;
+	}
+
+	virtual double getVaFormationE() const override {
+		return VaFormationE;
 	}
 	//
 	/**

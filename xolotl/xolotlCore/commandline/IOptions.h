@@ -480,10 +480,12 @@ public:
 	 * @return The number of xenon per fission
 	 */
 	virtual double getFissionYield() const = 0;
-	
+
 	//added for UZr
-	virtual double getInterfaceE() const = 0;
+	virtual double getXeInterfaceE() const = 0;
 	virtual double getXeSolubility() const = 0;
+	virtual double getVaInterfaceE() const = 0;
+	virtual double getVaFormationE() const = 0;
 	/**
 	 * Obtain the value of the migration energy threshold for effective diffusivity.
 	 *
