@@ -34,7 +34,7 @@ constexpr double uraniumDioxydeLatticeConstant = 0.57400000000000000;
 
 // TODO: Change this value
 //! Lattice Parameter for UZr
-constexpr double uraniumZirconiumLatticeConstant = 0.57400000000000000;
+constexpr double uraniumZirconiumLatticeConstant = 0.3500000000000000;
 
 //! Lattice Parameter for Iron
 constexpr double ironLatticeConstant = 0.28700000000000000;
