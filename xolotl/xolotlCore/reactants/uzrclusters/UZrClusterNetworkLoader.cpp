@@ -201,7 +201,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 	// V diffusion factors in nm^2/s
 	std::vector<double> vDiffusion = { 1e14 };
 	// V migration energies in eV
-	std::vector<double> vMigration = { 1.0 };
+	std::vector<double> vMigration = { options.getVaMigrationE() };
 
 	// Generate the Xe clusters
 	for (int i = 1; i <= maxXe; ++i) {
@@ -217,7 +217,8 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 			nextCluster->setFormationEnergy((-1*log(options.getXeSolubility()) * (xolotlCore::kBoltzmann * options.getConstTemperature()))); //1e-8 is the Xe solubility
 		} else {
 			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
-			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getXeInterfaceE()); // pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0) = 6.4349535575
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*6.4349535575*options.getXeInterfaceE());
+			// pow(36*xolotlCore::pi/pow(options.getDensity(),2),1.0/3.0) = 6.4349535575
 		}
 
 		if (i <= heDiffusion.size()) {
@@ -261,8 +262,9 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 		if (i <= 1){
 			nextCluster->setFormationEnergy(options.getVaFormationE()); //1.2 is vacancy formation energy
 		} else {
-			//nextCluster->setFormationEnergy(pow(i,2.0/3.0)*0.6434*3*1.0); // 0.6434 is for 0.1 J/m^2 interface energy
-			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*pow(36*xolotlCore::pi*pow(atomicVolume*1e-27,2),1.0/3.0)/1.602e-19 * options.getVaInterfaceE()); // pow(36*xolotlCore::pi*pow(atomicVolume*1e-27,2),1.0/3.0) = 6.4349535575
+			nextCluster->setFormationEnergy(pow(i,2.0/3.0)*pow(36*xolotlCore::pi
+				*pow(atomicVolume*1e-27,2),1.0/3.0)/1.602e-19 * options.getVaInterfaceE());
+				// pow(36*xolotlCore::pi*pow(atomicVolume*1e-27,2),1.0/3.0) = 6.4349535575
 		}
 
 		if (i <= vDiffusion.size()) {
@@ -290,7 +292,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 	// Reset the V composition
 	numV = 0;
 
-/*
+/* Turn off mixed cluster for testing
 	// Loop over vacancies in the outer loop.
 	for (int i = 1; i <= maxV; ++i) {
 		numV = i;

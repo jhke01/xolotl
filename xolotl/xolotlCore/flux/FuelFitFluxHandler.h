@@ -93,7 +93,7 @@ public:
 		// 0D Case
 		if (xGrid.size() == 0) {
 			updatedConcOffset[fluxIndices[0]] += fluxAmplitude;
-			updatedConcOffset[fluxIndices[1]] += fluxAmplitude*1e4; // add the vacancy generation rate
+			updatedConcOffset[fluxIndices[1]] += fluxAmplitude*1e5; // add the vacancy generation rate
 			return;
 		}
 

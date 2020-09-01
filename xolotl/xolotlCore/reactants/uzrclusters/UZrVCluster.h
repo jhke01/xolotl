@@ -29,6 +29,9 @@ private:
 	 * The recombination term
 	 */
 	double recombStrength;
+	/**
+	 * The trap term
+	 */
 	double trapStrength;
 
 public:
@@ -69,7 +72,7 @@ public:
 		//! Parameters for biased sink in the iron case
 		double r0 = latticeParam * 0.75 * sqrt(2.0);
 		double reactionRadius = latticeParam * cbrt(3.0 / xolotlCore::pi) * 0.5;
-		constexpr double rho = 1e14 * 1e-18; //sink density? in a unit of nm^-2?
+		constexpr double rho = 1e12 * 1e-18; //sink density? in a unit of nm^-2?
 
 		sinkStrength = rho * 1.00;
 		/*
@@ -80,11 +83,7 @@ public:
 		*/
 
 		recombStrength = 4.0 * xolotlCore::pi * reactionRadius * 1.00;
-
-
-
 		trapStrength = 4.0 * xolotlCore::pi * reactionRadius * 0.00;
-
 
 		return;
 	}
@@ -110,7 +109,6 @@ public:
 		double flux = UZrCluster::getEmissionFlux(i);
 		double k_b = xolotlCore::kBoltzmann;
 		double temp = network.getTemperature();
-		//double D_v = 1e-4*exp(-2.0/k_b/temp)*1e18; //D in nm^2/s
 		double Di = 1e-8*exp(-0.6/k_b/temp)*1e18; //D in nm^2/s
 
 		auto singleXeCluster = network.get(Species::Xe, 1);
@@ -144,7 +142,6 @@ public:
 		UZrCluster::getEmissionPartialDerivatives(partials, i);
 		double k_b = xolotlCore::kBoltzmann;
 		double temp = network.getTemperature();
-		//double D_v = 1e-4*exp(-2.0/k_b/temp)*1e18; //D in nm^2/s
 		double Di = 1e-8*exp(-0.6/k_b/temp)*1e18; //D in nm^2/s
 
 		auto singleXeCluster = network.get(Species::Xe, 1);
