@@ -320,6 +320,7 @@ protected:
 	double XeSolubility;
 	double VaInterfaceE;
 	double VaFormationE;
+	double VaMigrationE;
 	/**
 	 * Migration energy above which the diffusion will be ignored
 	 */
@@ -879,6 +880,9 @@ public:
 
 	virtual double getVaFormationE() const override {
 		return VaFormationE;
+	}
+	virtual double getVaMigrationE() const override {
+		return VaMigrationE;
 	}
 	//
 	/**

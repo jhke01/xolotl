@@ -486,6 +486,8 @@ public:
 	virtual double getXeSolubility() const = 0;
 	virtual double getVaInterfaceE() const = 0;
 	virtual double getVaFormationE() const = 0;
+	virtual double getVaMigrationE() const = 0;
+
 	/**
 	 * Obtain the value of the migration energy threshold for effective diffusivity.
 	 *
