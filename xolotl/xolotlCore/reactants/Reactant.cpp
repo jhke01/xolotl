@@ -43,6 +43,8 @@ void Reactant::recomputeDiffusionCoefficient(double temp, int i) {
 		}
 	//std::cout << "monomerXv =  " << monomerConc << std::endl;
 	*/
+	double atomicVolume = 0.5 * pow(network.getLatticeParameter(), 3);
+	//std::cout << "XxXXX =  " << atomicVolume << std::endl;
 
 	auto singleXeCluster = network.get(Species::V, 1);
 	auto monomerConc = singleXeCluster->getConcentration();
@@ -53,16 +55,17 @@ void Reactant::recomputeDiffusionCoefficient(double temp, int i) {
 		//double kernel_0 = -1.30 / (xolotlCore::kBoltzmann * temp);
 		//double D0 = 7.6e8 * exp(kernel_0); // nm2/s
 
-		double kernel = -0.6 / (xolotlCore::kBoltzmann * temp); // just migration barrier
-		double D3_Xe = 1e-7 * exp(kernel) * monomerConc * 1.0e18; // nm2/s
+		double kernel = -0.5 / (xolotlCore::kBoltzmann * temp); // just migration barrier
+		double D3_Xe = 1e-7 * exp(kernel) * monomerConc * atomicVolume * 1.0e18; // nm2/s
 
 		// Athermal diffusion
 		// We need the fission rate now
 		double fissionRate = network.getFissionRate() * 1.0e27; // #/m3/s
 		double D1_Xe = (8e-40 * fissionRate) * 1.0e18; // nm2/s
 
-		diffusionCoefficient[i] = D3_Xe;
-		std::cout << "DXe =  " << diffusionCoefficient[i] << std::endl;
+		diffusionCoefficient[i] = D3_Xe ;
+		//std::cout << "DXe_athermal =  " << D1_Xe << std::endl;
+		std::cout << "DXe_RED =  " << diffusionCoefficient[i] << std::endl;
 		}
 
 	if (getType() == ReactantType::V) {
@@ -73,12 +76,13 @@ void Reactant::recomputeDiffusionCoefficient(double temp, int i) {
 		// https://doi.org/10.1134/S0031918X1503014X
 		//double kernel = -0.5 / (xolotlCore::kBoltzmann * temp); // just migration barrier
 		//double D3 = 1.74e-7 * exp(kernel) * 1.0e18; // nm2/s
-		double kernel = -1.00 / (xolotlCore::kBoltzmann * temp); // just migration barrier
-		double D3_Va = 7.6e8 * exp(kernel); // nm2/s
+		double kernel = -1*migrationEnergy / (xolotlCore::kBoltzmann * temp); // just migration barrier
+		double D3_Va = 1e-8 * exp(kernel) * 1.0e18; // nm2/s
 		diffusionCoefficient[i] = D3_Va;
+		//std::cout << "migrationEnergy =  " << migrationEnergy << std::endl;
 		//std::cout << "DV =  " << diffusionCoefficient[i] << std::endl;
 		}
-		//std::cout << "DV =  " << diffusionCoefficient[1] << std::endl;
+
 
 	return;
 }
