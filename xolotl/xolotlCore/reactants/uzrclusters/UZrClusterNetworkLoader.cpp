@@ -1,11 +1,14 @@
+#include <fstream>
+#include <functional>
+#include <cassert>
 #include "UZrClusterNetworkLoader.h"
+#include <UZrClusterReactionNetwork.h>
 #include <UZrXeCluster.h>
 #include <UZrVCluster.h>
 #include <UZrXeVCluster.h>
-#include <UZrClusterReactionNetwork.h>
 #include <xolotlPerf.h>
 #include <MathUtils.h>
-#include <cassert>
+#include <UZrSuperCluster.h>
 #include "xolotlCore/io/XFile.h"
 
 
@@ -47,14 +50,55 @@ std::unique_ptr<UZrCluster> UZrClusterNetworkLoader::createUZrCluster(int numXe,
 	return std::unique_ptr<UZrCluster>(cluster);
 }
 
+std::unique_ptr<UZrCluster> UZrClusterNetworkLoader::createUZrSuperCluster(
+		int nTot, int maxXe, IReactionNetwork& network) const {
+	// Create the cluster
+	auto superCluster = new UZrSuperCluster(maxXe, nTot, network,
+			handlerRegistry);
+
+	// TODO when we have widespread C++14 support, use std::make_unique
+	// and construct unique ptr and object pointed to in one memory operation.
+	return std::unique_ptr<UZrCluster>(superCluster);
+}
+
+void UZrClusterNetworkLoader::pushUZrCluster(
+		std::unique_ptr<UZrClusterReactionNetwork> & network,
+		std::vector<std::reference_wrapper<Reactant> > & reactants,
+		std::unique_ptr<UZrCluster> & cluster) {
+	// Check if we want dummy reactions
+	if (dummyReactions) {
+		// Create a dummy cluster (Reactant) from the existing cluster
+		auto dummyCluster = std::unique_ptr<Reactant>(new Reactant(*cluster));
+		// Save access to it so we can trigger updates after
+		// we add all to the network.
+		reactants.emplace_back(*dummyCluster);
+
+		// Give the cluster to the network
+		network->add(std::move(dummyCluster));
+	} else {
+		// Save access to it so we can trigger updates after
+		// we add all to the network.
+		reactants.emplace_back(*cluster);
+
+		// Give the cluster to the network
+		network->add(std::move(cluster));
+	}
+
+	return;
+}
+
+
 UZrClusterNetworkLoader::UZrClusterNetworkLoader(
 		std::shared_ptr<xolotlPerf::IHandlerRegistry> registry) {
 	networkStream = nullptr;
 	handlerRegistry = registry;
 	fileName = "";
 	dummyReactions = false;
-	maxXe = -1;
-	maxV = -1;
+	//maxXe = -1;
+	//maxV = -1;
+	//xeMin = 1000000;
+	//xeMax = -1;
+	sectionWidth = 1;
 
 	return;
 }
@@ -62,12 +106,15 @@ UZrClusterNetworkLoader::UZrClusterNetworkLoader(
 UZrClusterNetworkLoader::UZrClusterNetworkLoader(
 		const std::shared_ptr<std::istream> stream,
 		std::shared_ptr<xolotlPerf::IHandlerRegistry> registry) {
-	networkStream = nullptr;
+	networkStream = stream;
 	handlerRegistry = registry;
 	fileName = "";
 	dummyReactions = false;
-	maxXe = -1;
-	maxV = -1;
+	//maxXe = -1;
+	//maxV = -1;
+	//xeMin = 1000000;
+	//xeMax = -1;
+	sectionWidth = 1;
 
 	return;
 }
@@ -136,12 +183,24 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::load(
 
 			// Save access to it so we can trigger updates once
 			// added to the network.
-			reactants.emplace_back(*nextCluster);
+			//reactants.emplace_back(*nextCluster);
 
 			// Give the cluster to the network
-			network->add(std::move(nextCluster));
+			//network->add(std::move(nextCluster));
+
+			// Save it in the network
+			pushUZrCluster(network, reactants, nextCluster);
 		} else {
 			// This is not happening yet
+			// Super cluster
+			int nTot = 0, maxXe = 0;
+			clusterGroup.readUZrSuperCluster(nTot, maxXe);
+
+			// Create the cluster
+			auto nextCluster = createUZrSuperCluster(nTot, maxXe, *network);
+
+			// Save it in the network
+			pushUZrCluster(network, reactants, nextCluster);
 		}
 	}
 
@@ -163,6 +222,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 		const IOptions &options) {
 	// Initial declarations
 	maxXe = options.getMaxImpurity(), maxV = options.getMaxV();
+	xeMax = options.getMaxImpurity();
 	int numXe = 0, numV = 0;
 	double formationEnergy = 0.0, migrationEnergy = 0.0;
 	double diffusionFactor = 0.0;
@@ -204,7 +264,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 	std::vector<double> vMigration = { options.getVaMigrationE() };
 
 	// Generate the Xe clusters
-	for (int i = 1; i <= maxXe; ++i) {
+	for (int i = 1; i <= min(xeMin - 1,xeMax); ++i) {
 		// Set the composition
 		numXe = i;
 		// Create the cluster
@@ -237,10 +297,13 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 
 		// Save access to it so we can trigger updates once
 		// added to the network.
-		reactants.emplace_back(*nextCluster);
+		//reactants.emplace_back(*nextCluster);
 
 		// Give the cluster to the network
-		network->add(std::move(nextCluster));
+		//network->add(std::move(nextCluster));
+
+		// Save it in the network
+		pushUZrCluster(network, reactants, nextCluster);
 	}
 
 	// Reset the Xe composition
@@ -320,17 +383,86 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 	*/
 
 	// Update reactants now that they are in network.
-	for (IReactant &currCluster : reactants) {
+	for (Reactant &currCluster : reactants) {
 		currCluster.updateFromNetwork();
+	}
+
+	// Check if we want dummy reactions
+	if (!dummyReactions) {
+		// Apply sectional grouping
+		applyGrouping(*network);
 	}
 
 	// Create the reactions
 	network->createReactionConnectivity();
 
 	// Recompute Ids and network size and redefine the connectivities
-	network->reinitializeNetwork();
+	//network->reinitializeNetwork();
 
 	return std::move(network);
+}
+
+void UZrClusterNetworkLoader::applyGrouping(IReactionNetwork& network) const {
+
+	// Initialize variables for the loop
+	int count = 0, superCount = 0, width = sectionWidth;
+	int size = 0;
+
+	int xeMax = maxXe;
+	// Decide here which types will undergo grouping
+	//std::vector<ReactantType> typeVec { ReactantType::Xe };
+
+	std::vector<ReactantType> typeVec { ReactantType::Xe };
+	// Loop on the xenon groups
+	for (int k = xeMin; k < xeMax; k++) {
+
+		// Increment the counter
+		count++;
+
+		// Track the size
+		size = k;
+
+		// Continue if we are not at the wanted width yet
+		if (count < width && k < xeMax - 1)
+			continue;
+
+		// Create the cluster
+		auto rawSuperCluster = new UZrSuperCluster(size, count, network,
+				handlerRegistry);
+
+//		std::cout << superCount << " " << count << " "
+//				<< rawSuperCluster->getName() << std::endl;
+
+		auto superCluster = std::unique_ptr<UZrSuperCluster>(rawSuperCluster);
+		// Give the cluster to the network.
+		network.add(std::move(superCluster));
+
+		// Reinitialize everything
+		size = 0;
+		count = 0;
+		superCount++;
+		width += 1;
+	}
+
+	std::cout << "FFF = " << xeMin << " " << xeMax  << std::endl;
+
+	if (xeMin < xeMax) {
+		// Group the last one alone
+		auto rawSuperCluster = new UZrSuperCluster(xeMax, 1, network,
+				handlerRegistry);
+
+//		std::cout << superCount << " last " << rawSuperCluster->getName()
+//				<< std::endl;
+
+		auto superCluster = std::unique_ptr<UZrSuperCluster>(rawSuperCluster);
+		// Give the cluster to the network.
+		network.add(std::move(superCluster));
+	}
+
+	// Recompute Ids and network size
+	network.reinitializeNetwork();
+
+	return;
 }
 
 } // namespace xolotlCore

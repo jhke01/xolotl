@@ -16,7 +16,7 @@
 #include <vector>
 #include <memory>
 #include <NESuperCluster.h>
-//#include <UZrSuperCluster.h>
+#include <UZrSuperCluster.h>
 #include <PSISuperCluster.h>
 #include <FeSuperCluster.h>
 #include <UZrCluster.h>

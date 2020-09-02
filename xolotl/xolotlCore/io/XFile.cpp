@@ -9,6 +9,7 @@
 #include <FeSuperCluster.h>
 #include <NESuperCluster.h>
 #include <AlloySuperCluster.h>
+#include <xolotlCore/reactants/uzrclusters/UZrSuperCluster.h>
 
 namespace xolotlCore {
 
@@ -382,6 +383,23 @@ XFile::ClusterGroup::ClusterGroup(const NetworkGroup& networkGroup,
 	// Super NE cluster case
 	else if (cluster.getType() == ReactantType::NESuper) {
 		auto& currCluster = static_cast<NESuperCluster&>(cluster);
+		// Build a dataspace for our scalar attributes.
+		XFile::ScalarDataSpace scalarDSpace;
+
+		// Add a nTot attribute.
+		int nTot = currCluster.getNTot();
+		Attribute<decltype(nTot)> nTotAttr(*this, nTotAttrName, scalarDSpace);
+		nTotAttr.setTo(nTot);
+		// Add a numAtom attribute.
+		int numAtom = currCluster.getAverage()
+				+ (double) (currCluster.getNTot() - 1) / 2.0;
+		Attribute<decltype(numAtom)> numAtomAttr(*this, numAtomAttrName,
+				scalarDSpace);
+		numAtomAttr.setTo(numAtom);
+	}
+	// Super UZr cluster case
+	else if (cluster.getType() == ReactantType::UZrSuper) {
+		auto& currCluster = static_cast<UZrSuperCluster&>(cluster);
 		// Build a dataspace for our scalar attributes.
 		XFile::ScalarDataSpace scalarDSpace;
 

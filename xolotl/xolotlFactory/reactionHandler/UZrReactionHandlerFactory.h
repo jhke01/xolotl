@@ -50,6 +50,9 @@ public:
 				xolotlCore::UZrClusterNetworkLoader>(registry);
 		// Give the networkFilename to the network loader
 		tempNetworkLoader->setFilename(options.getNetworkFilename());
+		// Set the options for the grouping scheme
+		tempNetworkLoader->setXeMin(options.getGroupingMin());
+		tempNetworkLoader->setWidth(options.getGroupingWidthA());
 		theNetworkLoaderHandler = tempNetworkLoader;
 
 		// Check if we want dummy reactions

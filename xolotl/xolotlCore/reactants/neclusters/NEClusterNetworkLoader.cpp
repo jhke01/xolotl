@@ -287,6 +287,9 @@ std::unique_ptr<IReactionNetwork> NEClusterNetworkLoader::generate(
 	// Create the reactions
 	network->createReactionConnectivity();
 
+	// Recompute Ids and network size and redefine the connectivities
+	//network->reinitializeNetwork();
+
 	return std::move(network);
 }
 

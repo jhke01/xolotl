@@ -104,7 +104,7 @@ public:
 	 * @param i The location on the grid in the depth direction
 	 * @return The flux due to its dissociation
 	 */
-	double getEmissionFlux(int i) override {
+	double getEmissionFlux(int i) const override {
 		// Initial declarations
 		double flux = UZrCluster::getEmissionFlux(i);
 		double k_b = xolotlCore::kBoltzmann;

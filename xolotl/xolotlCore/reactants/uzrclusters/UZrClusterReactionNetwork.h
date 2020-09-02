@@ -1,5 +1,5 @@
-#ifndef URZ_CLUSTER_REACTION_NETWORK_H
-#define URZ_CLUSTER_REACTION_NETWORK_H
+#ifndef UZR_CLUSTER_REACTION_NETWORK_H
+#define UZR_CLUSTER_REACTION_NETWORK_H
 
 // Includes
 #include <iostream>
@@ -12,6 +12,7 @@
 #include <algorithm>
 #include "ReactionNetwork.h"
 #include "ReactantType.h"
+#include "UZrCluster.h"
 
 namespace xolotlCore {
 
@@ -89,6 +90,46 @@ private:
 		emitting.emitFrom(drref, emitting);
 	}
 
+
+/**
+ * Add the dissociation connectivity for the reverse reaction if it is allowed.
+ *
+ * @param emittingReactant The reactant that would emit the pair
+ * @param reaction The reaction we want to reverse
+ *
+ */
+void checkForDissociation(IReactant * emittingReactant,
+		ProductionReaction& reaction);
+
+/**
+ * Determine if the reaction is possible given then reactants and product
+ *
+ * @param r1 First reactant.
+ * @param r2 Second reactant.
+ * @param prod Potential product.
+ */
+bool checkOverlap(UZrCluster& r1, UZrCluster& r2, UZrCluster& prod) {
+	int width1 = r1.getSectionWidth();
+	int size1 = r1.getSize();
+	int width2 = r2.getSectionWidth();
+	int size2 = r2.getSize();
+	int prodWidth = prod.getSectionWidth(), prodSize = prod.getSize();
+	int lo1 = ((int) ((double) size1 - (double) width1 / 2.0) + 1), lo2 =
+			((int) ((double) size2 - (double) width2 / 2.0) + 1), hi1 =
+			((int) ((double) size1 + (double) width1 / 2.0)), hi2 =
+			((int) ((double) size2 + (double) width2 / 2.0));
+	int prodLo = ((int) ((double) prodSize - (double) prodWidth / 2.0) + 1),
+			prodHi = ((int) ((double) prodSize + (double) prodWidth / 2.0));
+
+	int overlap = std::min(prodHi, hi1 + hi2) - std::max(prodLo, lo1 + lo2)
+			+ 1;
+
+	if (overlap < 1) return false;
+	return true;
+}
+
+
+
 public:
 
 	/**
@@ -150,6 +191,14 @@ public:
 	 */
 	void updateConcentrationsFromArray(double * concentrations) override;
 
+	/**
+	 * This operation returns the number of super reactants in the network.
+	 *
+	 * @return The number of super reactants in the network
+	 */
+	int getSuperSize() const override {
+		return getAll(ReactantType::UZrSuper).size();
+	}
 
 	/**
 	 * This operation returns the size or number of reactants and momentums in the network.
@@ -157,8 +206,17 @@ public:
 	 * @return The number of degrees of freedom
 	 */
 	virtual int getDOF() const override {
-		return size() + 1;
+		return size() + getSuperSize() + 1;
 	}
+
+	/**
+	 * This operation returns the size or number of reactants and momentums in the network.
+	 *
+	 * @return The number of degrees of freedom
+	 */
+	//virtual int getDOF() const override {
+	//	return size() + 1;
+	//}
 
 	/**
 	 * This operation returns the list (vector) of each reactant in the network.
@@ -167,6 +225,21 @@ public:
 	 */
 	virtual std::vector<std::vector<int> > getCompositionList() const override;
 
+
+	/**
+	 * Find the super cluster that contains the original cluster with nHe
+	 * helium atoms and nV vacancies.
+	 *
+	 * @param nXe The number of xenon atoms
+	 * @param nD The number of deuterium atoms
+	 * @param nT The number of tritium atoms
+	 * @param nV The number of vacancies
+	 * @return The super cluster representing the cluster with nHe helium
+	 * and nV vacancies, or nullptr if no such cluster exists.
+	 */
+	IReactant * getSuperFromComp(IReactant::SizeType nXe,
+			IReactant::SizeType nD, IReactant::SizeType nT,
+			IReactant::SizeType nV) const override;
 
 
 	/**
@@ -212,7 +285,7 @@ public:
 
 	/**
 	 * This operation sets the fission rate, needed to compute the diffusion coefficient
-	 * in NE.
+	 * in UZr.
 	 *
 	 * @param rate The fission rate
 	 */
@@ -223,7 +296,7 @@ public:
 
 	/**
 	 * This operation returns the fission rate, needed to compute the diffusion coefficient
-	 * in NE.
+	 * in UZr.
 	 *
 	 * @return The fission rate
 	 */

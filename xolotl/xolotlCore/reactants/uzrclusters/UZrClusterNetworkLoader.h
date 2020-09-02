@@ -4,7 +4,7 @@
 //Includes
 #include <UZrCluster.h>
 #include <NetworkLoader.h>
-#include "UZrClusterReactionNetwork.h"
+#include <UZrClusterReactionNetwork.h>
 
 namespace xolotlCore {
 
@@ -23,6 +23,22 @@ class UZrClusterNetworkLoader: public NetworkLoader {
 protected:
 
 	/**
+	 * The xenon size at which the grouping scheme starts
+	 */
+	int xeMin;
+
+	/**
+	 * The xenon size at which the grouping scheme ends
+	 */
+	int xeMax;
+
+	/**
+	 * The width of the group in the xenon direction.
+	 */
+	int sectionWidth;
+
+
+	/**
 	 * The maximum size for xenon clusters
 	 */
 	int maxXe;
@@ -36,7 +52,7 @@ protected:
 	 * Private nullary constructor.
 	 */
 	UZrClusterNetworkLoader() :
-			NetworkLoader(), maxXe(0), maxV(0) {
+			NetworkLoader(), maxXe(0), maxV(0), xeMin(-1), xeMax(-1), sectionWidth(-1) {
 	}
 
 	/**
@@ -48,6 +64,29 @@ protected:
 	 */
 	std::unique_ptr<UZrCluster> createUZrCluster(int numXe, int numV,
 			IReactionNetwork &network) const;
+
+	/**
+	 * This operation creates a super cluster
+	 *
+	 * @param nTot The total number of clusters
+	 * @param maxXe The maximum number of xenon
+	 * @return The new cluster
+	 */
+	std::unique_ptr<UZrCluster> createUZrSuperCluster(int nTot, int maxXe,
+			IReactionNetwork& network) const;
+
+	/**
+	 * This operation will add the given cluster to the network and reactants vector
+	 * as a standard cluster or a dummy one if we do not want the reactions to happen.
+	 *
+	 * @param network The network
+	 * @param reactants The vector of reactants kept by the loader
+	 * @param cluster The cluster to add to them
+	 */
+	virtual void pushUZrCluster(
+			std::unique_ptr<UZrClusterReactionNetwork> & network,
+			std::vector<std::reference_wrapper<Reactant> > & reactants,
+			std::unique_ptr<UZrCluster> & cluster);
 
 public:
 
@@ -96,8 +135,33 @@ public:
 	virtual std::unique_ptr<IReactionNetwork> generate(const IOptions &options)
 			override;
 
+	/**
+	 * This operation will apply a grouping method to the network.
+	 *
+	 * @param The network to be modified.
+	 */
+	void applyGrouping(IReactionNetwork& network) const;
+
+	/**
+	 * This operation will set the xenon size at which the grouping scheme starts.
+	 *
+	 * @param min The value for the size
+	 */
+	void setXeMin(int min) {
+		xeMin = min;
+	}
+
+	/**
+	 * This operation will set the xenon width for the grouping scheme.
+	 *
+	 * @param w The value of the width
+	 */
+	void setWidth(int w) {
+		sectionWidth = w;
+	}
+
 };
 
 } /* namespace xolotlCore */
 
-#endif /* FECLUSTERNETWORKLOADER_H_ */
+#endif /* UZRCLUSTERNETWORKLOADER_H_ */

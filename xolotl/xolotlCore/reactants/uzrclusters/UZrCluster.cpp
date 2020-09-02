@@ -278,7 +278,7 @@ double UZrCluster::getTotalFlux(int i) {
 	return prodFlux - combFlux + dissFlux - emissFlux;
 }
 
-double UZrCluster::getDissociationFlux(int xi) {
+double UZrCluster::getDissociationFlux(int xi) const{
 
 	// Sum dissociation flux over all pairs that dissociate to form this one.
 	double flux =
@@ -298,7 +298,7 @@ double UZrCluster::getDissociationFlux(int xi) {
 	return flux;
 }
 
-double UZrCluster::getEmissionFlux(int xi) {
+double UZrCluster::getEmissionFlux(int xi) const{
 
 	// Sum reaction rate constants over all emission pair reactions.
 	double flux = std::accumulate(emissionPairs.begin(), emissionPairs.end(),
@@ -309,7 +309,7 @@ double UZrCluster::getEmissionFlux(int xi) {
 	return flux * concentration;
 }
 
-double UZrCluster::getProductionFlux(int xi) {
+double UZrCluster::getProductionFlux(int xi) const{
 	// Local declarations
 	double flux = 0.0;
 
@@ -331,7 +331,7 @@ double UZrCluster::getProductionFlux(int xi) {
 	return flux;
 }
 
-double UZrCluster::getCombinationFlux(int xi) {
+double UZrCluster::getCombinationFlux(int xi) const{
 
 	double flux =
 			std::accumulate(combiningReactants.begin(),
