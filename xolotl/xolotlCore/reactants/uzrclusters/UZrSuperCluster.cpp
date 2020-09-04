@@ -31,7 +31,7 @@ UZrSuperCluster::UZrSuperCluster(int numMax, int nTot, IReactionNetwork& _networ
 	numXe = sizeSum / (double) nTot;
 	size = (int) numXe;
 	reactionRadius = reactionRadius / (double) nTot;
-	formationEnergy = pow(size,2.0/3.0)*6.4349535575*0.4000;
+	formationEnergy = 752; //pow(size,2.0/3.0)*6.4349535575*0.4000;
 
 	// Compute the dispersion
 	if (nTot == 1)
