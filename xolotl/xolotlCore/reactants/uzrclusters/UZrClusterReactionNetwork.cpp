@@ -184,6 +184,7 @@ void UZrClusterReactionNetwork::createReactionConnectivity() {
 		}
 	}
 
+/** mixed clustering temporatily removed
 	// Xenon-Vacancy clustering
 	// Xe_a + V_b --> (Xe_a)(V_b)
 	// Consider each Xe reactant.
@@ -293,7 +294,7 @@ void UZrClusterReactionNetwork::createReactionConnectivity() {
 			}
 		}
 	}
-
+**/
 	return;
 }
 
@@ -339,18 +340,7 @@ void UZrClusterReactionNetwork::reinitializeNetwork() {
 			[&id](IReactant &currReactant) {
 				id++;
 				currReactant.setId(id);
-			});
-
-	return;
-}
-
-void UZrClusterReactionNetwork::reinitializeConnectivities() {
-	// Reset the Ids
-	int id = 0;
-	// Reset connectivities of each reactant.
-	std::for_each(allReactants.begin(), allReactants.end(),
-			[](IReactant &currReactant) {
-				currReactant.resetConnectivities();
+				currReactant.setMomentId(id);
 			});
 
 	// Get all the super clusters and loop on them
@@ -371,10 +361,11 @@ void UZrClusterReactionNetwork::reinitializeConnectivities() {
 					}
 				}
 			});
+
 	return;
 }
 
-/**
+
 void UZrClusterReactionNetwork::reinitializeConnectivities() {
 	// Loop on all the reactants to reset their connectivities
 	std::for_each(allReactants.begin(), allReactants.end(),
@@ -384,7 +375,6 @@ void UZrClusterReactionNetwork::reinitializeConnectivities() {
 
 	return;
 }
-**/
 
 void UZrClusterReactionNetwork::updateConcentrationsFromArray(
 		double *concentrations) {
@@ -476,7 +466,6 @@ void UZrClusterReactionNetwork::getDiagonalFill(SparseFillMap &fillMap) {
 	// Get the connectivity for each reactant
 	std::for_each(allReactants.begin(), allReactants.end(),
 			[&fillMap, &dof, this](const IReactant &reactant) {
-
 				// Get the reactant's connectivity
 				auto const &connectivity = reactant.getConnectivity();
 				auto connectivityLength = connectivity.size();
@@ -528,8 +517,12 @@ void UZrClusterReactionNetwork::getDiagonalFill(SparseFillMap &fillMap) {
 }
 
 double UZrClusterReactionNetwork::getTotalAtomConcentration(int i) {
+	// Only work for 0
+	if (i > 0)
+		return 0.0;
+
 	// Initial declarations
-	double conc = 0.0;
+	double atomConc = 0.0;
 
 	// Sum over all Xe clusters.
 	for (auto const &currMapItem : getAll(ReactantType::Xe)) {
@@ -539,7 +532,7 @@ double UZrClusterReactionNetwork::getTotalAtomConcentration(int i) {
 		double size = cluster.getSize();
 
 		// Add the concentration times the Xe content to the total xenon concentration
-		conc += cluster.getConcentration() * size;
+		atomConc += cluster.getConcentration() * size;
 	}
 
 	// Sum over all super clusters.
@@ -550,7 +543,7 @@ double UZrClusterReactionNetwork::getTotalAtomConcentration(int i) {
 				static_cast<UZrSuperCluster&>(*(currMapItem.second));
 
 		// Add its total atom concentration
-		conc += cluster.getTotalXenonConcentration();
+		atomConc += cluster.getTotalXenonConcentration();
 	}
 
 	// Sum over all XeV clusters.
@@ -561,10 +554,10 @@ double UZrClusterReactionNetwork::getTotalAtomConcentration(int i) {
 		auto &comp = cluster.getComposition();
 
 		// Add the concentration times the Xe content to the total xenon concentration
-		conc += cluster.getConcentration() * comp[toCompIdx(Species::Xe)];
+		atomConc += cluster.getConcentration() * comp[toCompIdx(Species::Xe)];
 	}
 
-	return conc;
+	return atomConc;
 }
 
 double UZrClusterReactionNetwork::getTotalTrappedAtomConcentration(int i) {
@@ -621,6 +614,7 @@ void UZrClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 	// ----- Compute all of the new fluxes -----
 	std::for_each(allReactants.begin(), allReactants.end(),
 			[&updatedConcOffset, &i](IReactant &cluster) {
+
 				// Compute the flux
 				auto flux = cluster.getTotalFlux(i);
 				// Update the concentration of the cluster
@@ -628,18 +622,17 @@ void UZrClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 				updatedConcOffset[reactantIndex] += flux;
 	 		});
 
-	 // ---- Moments ----
-	 for (auto const& currMapItem : getAll(ReactantType::UZrSuper)) {
+	// ---- Moments ----
+	for (auto const& currMapItem : getAll(ReactantType::UZrSuper)) {
 
-		 auto& superCluster = static_cast<UZrSuperCluster&>(*(currMapItem.second));
+		auto& superCluster = static_cast<UZrSuperCluster&>(*(currMapItem.second));
 
-		 // Compute the xenon moment flux
-		 auto flux = superCluster.getMomentFlux();
-		 // Update the concentration of the cluster
-		 auto reactantIndex = superCluster.getMomentId() - 1;
-		 updatedConcOffset[reactantIndex] += flux;
-	 }
-
+	  // Compute the xenon moment flux
+	  auto flux = superCluster.getMomentFlux();
+	  // Update the concentration of the cluster
+		auto reactantIndex = superCluster.getMomentId() - 1;
+		updatedConcOffset[reactantIndex] += flux;
+	}
 
 	return;
 }
@@ -647,13 +640,13 @@ void UZrClusterReactionNetwork::computeAllFluxes(double *updatedConcOffset,
 void UZrClusterReactionNetwork::computeAllPartials(
 		const std::vector<size_t> &startingIdx, const std::vector<int> &indices,
 		std::vector<double> &vals, int i) const {
+
 	// Initial declarations
 	const int dof = getDOF();
 	std::vector<double> clusterPartials(dof, 0.0);
 
 	// Make a vector of types for the non super clusters
-	std::vector<ReactantType> typeVec { ReactantType::Xe, ReactantType::V,
-			ReactantType::XeV };
+	std::vector<ReactantType> typeVec { ReactantType::V, ReactantType::XeV };
 	// Loop on it
 	for (auto tvIter = typeVec.begin(); tvIter != typeVec.end(); ++tvIter) {
 
@@ -686,6 +679,30 @@ void UZrClusterReactionNetwork::computeAllPartials(
 				// than using memset.
 				clusterPartials[pdColIdsVector[j]] = 0.0;
 			}
+		}
+	}
+
+	// Update the column in the Jacobian that represents each normal reactant
+	for (auto const& superMapItem : getAll(ReactantType::Xe)) {
+		auto const& reactant = *(superMapItem.second);
+
+		// Get the reactant index
+		auto reactantIndex = reactant.getId() - 1;
+
+		// Get the partial derivatives
+		reactant.getPartialDerivatives(clusterPartials, i);
+		// Get the list of column ids from the map
+		auto const& pdColIdsVector = dFillMap.at(reactantIndex);
+
+		// Loop over the list of column ids
+		auto myStartingIdx = startingIdx[reactantIndex];
+		for (int j = 0; j < pdColIdsVector.size(); j++) {
+			// Get the partial derivative from the array of all of the partials
+			vals[myStartingIdx + j] = clusterPartials[pdColIdsVector[j]];
+
+			// Reset the cluster partial value to zero. This is much faster
+			// than using memset.
+			clusterPartials[pdColIdsVector[j]] = 0.0;
 		}
 	}
 
@@ -739,7 +756,6 @@ void UZrClusterReactionNetwork::computeAllPartials(
 			}
 		}
 	}
-
 
 	return;
 }

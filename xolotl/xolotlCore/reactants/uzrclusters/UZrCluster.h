@@ -210,7 +210,7 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void resultFrom(ProductionReaction &reaction, IReactant &product) override;
+	void resultFrom(ProductionReaction& reaction, IReactant& product) override;
 
 	/**
 	 * Note that we result from the given reaction.
@@ -218,7 +218,17 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void resultFrom(ProductionReaction &reaction, double *coef) override;
+	void resultFrom(ProductionReaction& reaction, int a[4] = { },
+			int b[4] = { }) override;
+
+	/**
+	 * Note that we result from the given reaction.
+	 * Assumes the reaction is already in our network.
+	 *
+	 * \see Reactant.h
+	 */
+	void resultFrom(ProductionReaction& reaction, double *coef) override;
+
 
 	/**
 	 * Note that we combine with another cluster in a production reaction.
@@ -226,7 +236,7 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void participateIn(ProductionReaction &reaction, IReactant &product)
+	void participateIn(ProductionReaction& reaction, IReactant& product)
 			override;
 
 	/**
@@ -235,7 +245,15 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void participateIn(ProductionReaction &reaction, double *coef) override;
+	void participateIn(ProductionReaction& reaction, int a[4] = { }) override;
+
+	/**
+	 * Note that we combine with another cluster in a production reaction.
+	 * Assumes that the reaction is already in our network.
+	 *
+	 * \see Reactant.h
+	 */
+	void participateIn(ProductionReaction& reaction, double *coef) override;
 
 	/**
 	 * Note that we combine with another cluster in a dissociation reaction.
@@ -243,7 +261,7 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void participateIn(DissociationReaction &reaction, IReactant &disso)
+	void participateIn(DissociationReaction& reaction, IReactant& disso)
 			override;
 
 	/**
@@ -252,7 +270,16 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void participateIn(DissociationReaction &reaction, double *coef) override;
+	void participateIn(DissociationReaction& reaction, int a[4] = { },
+			int b[4] = { }) override;
+
+	/**
+	 * Note that we combine with another cluster in a dissociation reaction.
+	 * Assumes the reaction is already in our network.
+	 *
+	 * \see Reactant.h
+	 */
+	void participateIn(DissociationReaction& reaction, double *coef) override;
 
 	/**
 	 * Note that we emit from the given reaction.
@@ -260,7 +287,7 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void emitFrom(DissociationReaction &reaction, IReactant &disso) override;
+	void emitFrom(DissociationReaction& reaction, IReactant& disso) override;
 
 	/**
 	 * Note that we emit from the given reaction.
@@ -268,8 +295,15 @@ public:
 	 *
 	 * \see Reactant.h
 	 */
-	void emitFrom(DissociationReaction &reaction, double *coef) override;
+	void emitFrom(DissociationReaction& reaction, int a[4] = { }) override;
 
+	/**
+	 * Note that we emit from the given reaction.
+	 * Assumes the reaction is already in our network.
+	 *
+	 * \see Reactant.h
+	 */
+	void emitFrom(DissociationReaction& reaction, double *coef) override;
 	/**
 	 * This operation returns the connectivity array for this cluster for
 	 * forward reactions. An entry with value one means that this cluster

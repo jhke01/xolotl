@@ -44,7 +44,6 @@ std::unique_ptr<UZrCluster> UZrClusterNetworkLoader::createUZrCluster(int numXe,
 		cluster = new UZrVCluster(numV, network, handlerRegistry);
 	}
 
-
 	assert(cluster != nullptr);
 
 	return std::unique_ptr<UZrCluster>(cluster);
@@ -149,6 +148,9 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::load(
 	if (!(radius > 0.0))
 		radius = xenonRadius;
 	network->setImpurityRadius(radius);
+
+	// Set the density in a bubble
+	network->setDensity(options.getDensity());
 
 	// Loop on the clusters
 	for (int i = 0; i < normalSize + superSize; i++) {
@@ -264,7 +266,7 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 	std::vector<double> vMigration = { options.getVaMigrationE() };
 
 	// Generate the Xe clusters
-	for (int i = 1; i <= min(xeMin - 1,xeMax); ++i) {
+	for (int i = 1; i <= min(xeMin - 1, xeMax); ++i) {
 		// Set the composition
 		numXe = i;
 		// Create the cluster
@@ -346,10 +348,13 @@ std::unique_ptr<IReactionNetwork> UZrClusterNetworkLoader::generate(
 
 		// Save access to it so we can trigger updates once
 		// added to the network.
-		reactants.emplace_back(*nextCluster);
+		//reactants.emplace_back(*nextCluster);
 
 		// Give the cluster to the network
-		network->add(std::move(nextCluster));
+		//network->add(std::move(nextCluster));
+
+		pushUZrCluster(network, reactants, nextCluster);
+
 	}
 
 	// Reset the V composition

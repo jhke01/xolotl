@@ -66,7 +66,11 @@ void Reactant::recomputeDiffusionCoefficient(double temp, int i) {
 		diffusionCoefficient[i] = D3_Xe ;
 		//std::cout << "DXe_athermal =  " << D1_Xe << std::endl;
 		std::cout << "DXe_RED =  " << diffusionCoefficient[i] << std::endl;
-		}
+	}
+
+	if (getType() == ReactantType::UZrSuper) {
+		diffusionCoefficient[i] = 0 ;
+	}
 
 	if (getType() == ReactantType::V) {
 		// Vacancy diffusion
@@ -81,7 +85,7 @@ void Reactant::recomputeDiffusionCoefficient(double temp, int i) {
 		diffusionCoefficient[i] = D3_Va;
 		//std::cout << "migrationEnergy =  " << migrationEnergy << std::endl;
 		//std::cout << "DV =  " << diffusionCoefficient[i] << std::endl;
-		}
+	}
 
 
 	return;

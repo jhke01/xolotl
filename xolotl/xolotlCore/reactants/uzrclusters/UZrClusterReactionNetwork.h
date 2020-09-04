@@ -35,6 +35,9 @@ private:
 	//! The fission rate in nm2/s
 	double fissionRate;
 
+	//! The volumetric density of xenon in a bubble in nm-3
+	double rho;
+
 	/**
 	 * Calculate the dissociation constant of the first cluster with respect to
 	 * the single-species cluster of the same type based on the current clusters
@@ -225,7 +228,6 @@ public:
 	 */
 	virtual std::vector<std::vector<int> > getCompositionList() const override;
 
-
 	/**
 	 * Find the super cluster that contains the original cluster with nHe
 	 * helium atoms and nV vacancies.
@@ -240,7 +242,6 @@ public:
 	IReactant * getSuperFromComp(IReactant::SizeType nXe,
 			IReactant::SizeType nD, IReactant::SizeType nT,
 			IReactant::SizeType nV) const override;
-
 
 	/**
 	 * Get the diagonal fill for the Jacobian, corresponding to the reactions.
@@ -302,6 +303,27 @@ public:
 	 */
 	double getFissionRate() const override {
 		return fissionRate;
+	}
+
+	/**
+	 * This operation sets the density of xenon in a bubble, needed to compute all the reaction radii
+	 * in NE.
+	 *
+	 * @param density The density
+	 */
+	void setDensity(double density) override {
+		rho = density;
+		return;
+	}
+
+	/**
+	 * This operation returns the density of xenon in a bubble, needed to compute all the reaction radii
+	 * in NE.
+	 *
+	 * @return The density
+	 */
+	double getDensity() const override {
+		return rho;
 	}
 
 	/**
